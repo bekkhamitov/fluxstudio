@@ -27,11 +27,13 @@ export async function analyzeImage(
           {
             type: 'text',
             text: `Analyze this image for use as a reference in AI image generation. Provide:
-1. A short, unique name (2-3 words, lowercase with underscores, e.g., "red_ferrari", "blonde_woman", "sunset_beach")
-2. A brief description (1-2 sentences) of the key visual elements that would help an AI understand what to reference.
+1. A very short name (1-2 words ONLY, lowercase with underscore if needed, e.g., "ferrari", "woman", "sunset", "red_car")
+2. A brief description (1-2 sentences) of the key visual elements.
+
+IMPORTANT: The name must be 1-2 words maximum. Keep it simple and memorable.
 
 Respond in this exact JSON format:
-{"name": "example_name", "description": "Brief description of key visual elements."}`,
+{"name": "short_name", "description": "Brief description."}`,
           },
         ],
       },

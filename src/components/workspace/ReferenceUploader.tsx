@@ -2,29 +2,62 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ImageAnalysis } from '@/types';
 
-interface ReferenceUploaderProps {
-  onUpload: (file: File, name: string, description: string) => Promise<void>;
-  disabled?: boolean;
+interface PendingUpload {
+  id: string;
+  file: File;
+  previewUrl: string;
+  tempName: string;
+  pendingId: string;
+  status: 'uploading' | 'analyzing' | 'done';
 }
 
-export function ReferenceUploader({ onUpload, disabled }: ReferenceUploaderProps) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+interface ReferenceUploaderProps {
+  onUpload: (file: File, name: string, description: string, pendingId: string) => Promise<void>;
+  onQuickUpload: (file: File, tempName: string, previewUrl: string) => string;
+  onUpdateReference: (tempId: string, name: string, description: string) => void;
+  disabled?: boolean;
+  referenceCount: number;
+}
+
+export function ReferenceUploader({
+  onUpload,
+  onQuickUpload,
+  onUpdateReference,
+  disabled,
+  referenceCount
+}: ReferenceUploaderProps) {
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
 
   const processFile = useCallback(
-    async (file: File) => {
-      setUploading(true);
-      setUploadProgress('Analyzing image...');
+    async (file: File, index: number) => {
+      const tempId = `temp_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`;
+      const previewUrl = URL.createObjectURL(file);
+      const tempName = `image${referenceCount + index + 1}`;
+
+      // Immediately show the image in the grid with temp name
+      // This returns the pending ID that we need to pass to onUpload
+      const pendingId = onQuickUpload(file, tempName, previewUrl);
+
+      // Add to pending uploads for visual feedback
+      setPendingUploads(prev => [...prev, {
+        id: tempId,
+        file,
+        previewUrl,
+        tempName,
+        pendingId,
+        status: 'uploading'
+      }]);
 
       try {
-        // Convert file to base64
+        // Start upload with pendingId so it replaces instead of adding
+        const uploadPromise = onUpload(file, tempName, '', pendingId);
+
+        // Analyze in parallel
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
-            // Remove the data URL prefix
             const base64Data = result.split(',')[1];
             resolve(base64Data);
           };
@@ -32,7 +65,10 @@ export function ReferenceUploader({ onUpload, disabled }: ReferenceUploaderProps
           reader.readAsDataURL(file);
         });
 
-        // Get media type
+        setPendingUploads(prev =>
+          prev.map(p => p.id === tempId ? { ...p, status: 'analyzing' } : p)
+        );
+
         const mediaType = file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
 
         // Analyze image with Claude
@@ -42,48 +78,44 @@ export function ReferenceUploader({ onUpload, disabled }: ReferenceUploaderProps
           body: JSON.stringify({ image: base64, mediaType }),
         });
 
-        let analysis: ImageAnalysis;
+        // Wait for upload to complete
+        await uploadPromise;
+
         if (response.ok) {
-          analysis = await response.json();
-        } else {
-          // Fallback if analysis fails
-          analysis = {
-            name: `image_${Date.now().toString(36)}`,
-            description: '',
-          };
+          const analysis = await response.json();
+          // Update the reference with analyzed name/description
+          onUpdateReference(tempName, analysis.name, analysis.description);
         }
 
-        setUploadProgress('Uploading...');
-
-        // Upload with analyzed name/description
-        await onUpload(file, analysis.name, analysis.description);
-
-        setUploadProgress(null);
+        setPendingUploads(prev => prev.filter(p => p.id !== tempId));
+        URL.revokeObjectURL(previewUrl);
       } catch (error) {
         console.error('Upload error:', error);
-        setUploadProgress(null);
-      } finally {
-        setUploading(false);
+        setPendingUploads(prev => prev.filter(p => p.id !== tempId));
+        URL.revokeObjectURL(previewUrl);
       }
     },
-    [onUpload]
+    [onUpload, onQuickUpload, onUpdateReference, referenceCount]
   );
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      for (const file of acceptedFiles) {
-        await processFile(file);
-      }
+      // Process all files in parallel for faster upload
+      await Promise.all(
+        acceptedFiles.map((file, index) => processFile(file, index))
+      );
     },
     [processFile]
   );
+
+  const isUploading = pendingUploads.length > 0;
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
-    disabled: disabled || uploading,
+    disabled: disabled || isUploading,
     maxSize: 10 * 1024 * 1024, // 10MB
   });
 
@@ -91,57 +123,29 @@ export function ReferenceUploader({ onUpload, disabled }: ReferenceUploaderProps
     <div
       {...getRootProps()}
       className={`
-        border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-        transition-colors
-        ${isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}
-        ${disabled || uploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary/50'}
+        flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer
+        transition-colors border
+        ${isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50 hover:bg-muted/50'}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
       <input {...getInputProps()} />
-      {uploading ? (
-        <div className="space-y-2">
-          <div className="animate-pulse">
-            <svg
-              className="mx-auto h-8 w-8 text-muted-foreground"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <p className="text-sm text-muted-foreground">{uploadProgress}</p>
-        </div>
-      ) : isDragActive ? (
-        <p className="text-sm text-primary">Drop images here...</p>
-      ) : (
-        <div className="space-y-2">
-          <svg
-            className="mx-auto h-8 w-8 text-muted-foreground"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-          <p className="text-sm text-muted-foreground">
-            Drop images here, or click to select
-          </p>
-          <p className="text-xs text-muted-foreground/70">
-            Images will be auto-analyzed and named
-          </p>
-        </div>
-      )}
+      <svg
+        className="h-4 w-4 text-muted-foreground"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        />
+      </svg>
+      <span className="text-sm text-muted-foreground">
+        {isDragActive ? 'Drop here' : 'Add images'}
+      </span>
     </div>
   );
 }

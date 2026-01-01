@@ -6,6 +6,14 @@ export interface ReferenceImage {
   image_url: string;
   storage_path: string;
   created_at: string;
+  isPending?: boolean; // True while image is being uploaded/analyzed
+}
+
+export interface ReferenceSnapshot {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string;
 }
 
 export interface Generation {
@@ -14,6 +22,7 @@ export interface Generation {
   prompt_raw: string;
   prompt_expanded: string;
   reference_image_ids: string[];
+  reference_snapshots: ReferenceSnapshot[];
   output_image_url: string;
   output_storage_path: string;
   model: FluxModel;

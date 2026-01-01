@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ReferenceImage } from '@/types';
 
@@ -45,10 +45,48 @@ export function useReferences() {
     setRefreshTrigger((t) => t + 1);
   };
 
+  // Add a pending reference with local preview (optimistic update)
+  const addPendingReference = useCallback((tempName: string, previewUrl: string): string => {
+    const tempId = `pending_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const pendingRef: ReferenceImage = {
+      id: tempId,
+      user_id: '',
+      name: tempName,
+      description: '',
+      image_url: previewUrl,
+      storage_path: '',
+      created_at: new Date().toISOString(),
+      isPending: true,
+    };
+    setReferences((prev) => [pendingRef, ...prev]);
+    return tempId;
+  }, []);
+
+  // Update a reference by name (for updating pending refs after analysis)
+  const updateReferenceByName = useCallback((
+    oldName: string,
+    newName: string,
+    description: string
+  ) => {
+    setReferences((prev) =>
+      prev.map((ref) =>
+        ref.name === oldName ? { ...ref, name: newName, description } : ref
+      )
+    );
+  }, []);
+
+  // Replace a pending reference with the real one
+  const replacePendingReference = useCallback((tempId: string, realRef: ReferenceImage) => {
+    setReferences((prev) =>
+      prev.map((ref) => (ref.id === tempId ? realRef : ref))
+    );
+  }, []);
+
   const addReference = async (
     file: File,
     name: string,
-    description: string
+    description: string,
+    pendingId?: string
   ): Promise<ReferenceImage | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -69,6 +107,10 @@ export function useReferences() {
 
     if (uploadError) {
       setError(`Upload failed: ${uploadError.message}`);
+      // Remove pending reference on error
+      if (pendingId) {
+        setReferences((prev) => prev.filter((r) => r.id !== pendingId));
+      }
       return null;
     }
 
@@ -92,10 +134,19 @@ export function useReferences() {
 
     if (insertError) {
       setError(`Database insert failed: ${insertError.message}`);
+      // Remove pending reference on error
+      if (pendingId) {
+        setReferences((prev) => prev.filter((r) => r.id !== pendingId));
+      }
       return null;
     }
 
-    setReferences((prev) => [data, ...prev]);
+    // Replace pending with real reference, or add new
+    if (pendingId) {
+      replacePendingReference(pendingId, data);
+    } else {
+      setReferences((prev) => [data, ...prev]);
+    }
     return data;
   };
 
@@ -152,6 +203,9 @@ export function useReferences() {
     loading,
     error,
     addReference,
+    addPendingReference,
+    updateReferenceByName,
+    replacePendingReference,
     updateReference,
     deleteReference,
     refreshReferences,

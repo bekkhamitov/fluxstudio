@@ -21,31 +21,21 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" disabled={disabled} className="min-w-[180px] justify-between">
-          <span className="truncate">{selected.name}</span>
-          <svg
-            className="h-4 w-4 opacity-50 ml-2 flex-shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+        <Button variant="outline" disabled={disabled} className="h-9 px-3 gap-1.5 text-sm border-border">
+          <span className="text-muted-foreground">{selected.name}</span>
+          <svg className="h-3 w-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[220px]">
+      <DropdownMenuContent align="start" className="w-[200px]">
         {FLUX_MODELS.map((model) => (
           <DropdownMenuItem
             key={model.id}
             onClick={() => onChange(model.id)}
-            className="flex flex-col items-start gap-1 py-2"
+            className="flex flex-col items-start gap-0.5 py-2"
           >
-            <span className="font-medium">{model.name}</span>
+            <span className="font-medium text-sm">{model.name}</span>
             <span className="text-xs text-muted-foreground">{model.description}</span>
           </DropdownMenuItem>
         ))}

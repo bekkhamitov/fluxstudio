@@ -14,7 +14,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  rectSortingStrategy,
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ReferenceImage } from '@/types';
@@ -44,13 +44,14 @@ function SortableReference({ reference, index, onUpdate, onDelete }: SortableRef
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes}>
       <ReferenceCard
         reference={reference}
         index={index}
         onUpdate={onUpdate}
         onDelete={onDelete}
         isDragging={isDragging}
+        dragListeners={listeners}
       />
     </div>
   );
@@ -106,8 +107,8 @@ export function ReferenceGrid({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext items={references.map((r) => r.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <SortableContext items={references.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+        <div className="flex flex-col gap-2">
           {references.map((reference, index) => (
             <SortableReference
               key={reference.id}

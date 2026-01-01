@@ -73,6 +73,14 @@ export async function POST(request: NextRequest) {
       .from('outputs')
       .getPublicUrl(storagePath);
 
+    // Create reference snapshots (name, description, image_url at time of generation)
+    const referenceSnapshots = references.map((ref) => ({
+      id: ref.id,
+      name: ref.name,
+      description: ref.description,
+      image_url: ref.image_url,
+    }));
+
     // Save generation record
     const { data: generation, error: dbError } = await supabase
       .from('generations')
@@ -82,6 +90,7 @@ export async function POST(request: NextRequest) {
         prompt_raw: promptRaw,
         prompt_expanded: promptExpanded,
         reference_image_ids: references.map((ref) => ref.id),
+        reference_snapshots: referenceSnapshots,
         output_image_url: publicUrl,
         output_storage_path: storagePath,
         model,

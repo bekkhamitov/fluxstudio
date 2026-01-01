@@ -7,17 +7,18 @@ FLUX.2 supports up to 10 reference images for maintaining character, product, an
 ## Solution
 
 A workflow tool that makes FLUX multi-reference intuitive:
-- **Smart Upload** - Drop an image, AI auto-generates a name (`red_ferrari`) and description
-- **@ Syntax** - Type `@` for a dropdown of references, write naturally: "A woman driving @ferrari through @night_city"
-- **Persistent Library** - References saved to Supabase, available across sessions
+- **Smart Upload** - Drop an image, AI auto-generates a short name (1-2 words) and description
+- **Instant Preview** - Images show immediately with temp names, analysis updates in background
+- **@ Syntax** - Type `@` for dropdown, Tab/Enter to autocomplete, write naturally: "A woman driving @ferrari through @city"
+- **Persistent Library** - References saved to Supabase, all references available in @ dropdown
 - **"What FLUX Sees" Preview** - Shows expanded prompt (`@ferrari` → "the red Ferrari 488 (image 1)")
 - **Generation History** - All outputs saved with prompts and references used
-- **Reference Reordering** - Drag to reorder, position matters for FLUX
+- **Reference Reordering** - Drag handle to reorder, position matters for FLUX
 
 ## Tech Stack
 
 - Next.js 16 (App Router), TypeScript, Tailwind CSS, shadcn/ui
-- Supabase (Auth, Storage, PostgreSQL)
+- Supabase (Auth with email/password, Storage, PostgreSQL)
 - BFL API (FLUX.2), Anthropic API (Claude Haiku)
 
 ## Project Structure
@@ -25,7 +26,7 @@ A workflow tool that makes FLUX multi-reference intuitive:
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Main workspace
+│   ├── page.tsx           # Main workspace (prompt-focused layout)
 │   ├── history/           # Generation history view
 │   ├── auth/              # Login page + callback
 │   └── api/               # API routes
@@ -33,22 +34,32 @@ src/
 │       └── generate/      # BFL API wrapper
 ├── components/
 │   ├── workspace/         # Main UI components
+│   │   ├── PromptEditor   # @ syntax with keyboard navigation
+│   │   ├── ReferenceDropdown # Autocomplete dropdown (absolute positioned)
+│   │   ├── ReferenceCard  # Compact card with hover actions
+│   │   ├── ReferenceGrid  # Drag-drop grid with dnd-kit
+│   │   └── ReferenceUploader # Toolbar-style upload button
 │   ├── history/           # History view components
 │   ├── auth/              # Auth button
 │   └── ui/                # shadcn components
-├── hooks/                 # React hooks for state management
+├── hooks/
+│   ├── useReferences.ts   # CRUD + optimistic updates for references
+│   ├── usePromptParser.ts # @ syntax parsing and expansion
+│   ├── useGeneration.ts   # Generation state management
+│   └── useHistory.ts      # History fetching
 ├── lib/
 │   ├── supabase/          # Supabase clients (browser/server/middleware)
 │   ├── bfl.ts             # BFL API client
-│   └── anthropic.ts       # Claude API client
-└── types/                 # TypeScript types
+│   └── anthropic.ts       # Claude API client (1-2 word names)
+└── types/                 # TypeScript types (includes isPending for optimistic UI)
 ```
 
 ## Key Files
 
 - `src/lib/bfl.ts` - BFL API integration (endpoints, polling, request building)
-- `src/lib/anthropic.ts` - Claude Haiku image analysis
+- `src/lib/anthropic.ts` - Claude Haiku image analysis (1-2 word names)
 - `src/hooks/usePromptParser.ts` - @ syntax parsing and expansion
+- `src/hooks/useReferences.ts` - Reference CRUD with optimistic updates
 - `src/app/api/generate/route.ts` - Generation endpoint (BFL + storage)
 - `supabase/schema.sql` - Database schema and RLS policies
 
@@ -71,8 +82,13 @@ Required in `.env.local`:
 
 ## Database Tables
 
-- `reference_images` - User's reference image library
-- `generations` - Generation history with prompts and outputs
+- `reference_images` - User's reference image library (with isPending for optimistic UI)
+- `generations` - Generation history with prompts, outputs, and reference_snapshots (JSONB)
+
+## Storage Buckets
+
+- `references` - User uploaded reference images
+- `outputs` - Generated images
 
 ## BFL API Notes
 
@@ -83,8 +99,19 @@ Required in `.env.local`:
 
 ## Core Features
 
-1. **Reference Upload** - Drag-drop with Claude Haiku auto-analysis
-2. **@ Syntax Editor** - Type @ for reference dropdown, expands to "image N" format
+1. **Reference Upload** - Toolbar button, instant display with optimistic updates
+2. **@ Syntax Editor** - Type @ for dropdown, Tab/Enter to select, Arrow keys to navigate
 3. **Preview Panel** - Shows expanded prompt FLUX receives
 4. **Model Selector** - Switch between pro/max/flex
-5. **History** - All generations saved with prompts and references
+5. **History** - All generations saved, accessible via header link
+
+## UI/UX
+
+- Dark theme with green accent 
+- Prompt-focused layout with card container
+- Inline reference list (drag handle | thumbnail | name/description | actions)
+- Toolbar-style controls (add images, model selector, generate)
+- History shows reference snapshots with names and thumbnails
+
+
+* Remember to always update @CLAUDE.md with changes that you've made

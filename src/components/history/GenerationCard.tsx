@@ -91,6 +91,38 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
               <p className="text-sm font-mono bg-muted p-2 rounded">{generation.prompt_expanded}</p>
             </div>
 
+            {generation.reference_snapshots?.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">References Used</h4>
+                <div className="flex flex-wrap gap-2">
+                  {generation.reference_snapshots.map((ref, i) => (
+                    <div key={ref.id} className="flex items-center gap-2 bg-muted rounded p-1.5 pr-3">
+                      <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
+                        <Image
+                          src={ref.image_url}
+                          alt={ref.name}
+                          fill
+                          className="object-cover"
+                          sizes="32px"
+                        />
+                        <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[8px] font-mono px-0.5 rounded-tl">
+                          {i + 1}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium truncate">@{ref.name}</p>
+                        {ref.description && (
+                          <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                            {ref.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm">
@@ -101,10 +133,22 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                     <span className="text-muted-foreground">Seed:</span> {generation.seed}
                   </p>
                 )}
-                <p className="text-sm">
-                  <span className="text-muted-foreground">References:</span>{' '}
-                  {generation.reference_image_ids.length}
-                </p>
+                {generation.reference_snapshots?.length > 0 ? (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">References:</span>{' '}
+                    {generation.reference_snapshots.map((ref, i) => (
+                      <span key={ref.id}>
+                        @{ref.name}
+                        {i < generation.reference_snapshots.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">References:</span>{' '}
+                    {generation.reference_image_ids.length}
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-2">
