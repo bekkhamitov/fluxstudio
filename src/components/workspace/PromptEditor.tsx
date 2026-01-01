@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ReferenceImage } from '@/types';
-import { Textarea } from '@/components/ui/textarea';
 import { ReferenceDropdown } from './ReferenceDropdown';
 
 interface PromptEditorProps {
@@ -18,7 +17,7 @@ export function PromptEditor({
   onChange,
   references,
   disabled,
-  placeholder = 'Describe your image... Use @ to reference images',
+  placeholder = 'Describe what you want to create...',
 }: PromptEditorProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -79,16 +78,15 @@ export function PromptEditor({
     onChange(newValue);
     setCursorPosition(pos);
 
-    // Check if we should show the dropdown
+    // Check if we should show the dropdown - only if there are references
     const textBeforeCursor = newValue.slice(0, pos);
     const atMatch = textBeforeCursor.match(/@(\w*)$/);
 
-    if (atMatch) {
+    if (atMatch && references.length > 0) {
       setSearchQuery(atMatch[1]);
-      setSelectedIndex(0); // Reset selection when typing
+      setSelectedIndex(0);
       setShowDropdown(true);
 
-      // Calculate dropdown position
       if (textareaRef.current) {
         calculateDropdownPosition(textareaRef.current, textBeforeCursor);
       }
@@ -135,7 +133,6 @@ export function PromptEditor({
       const textBeforeCursor = value.slice(0, cursorPosition);
       const textAfterCursor = value.slice(cursorPosition);
 
-      // Find the @ position
       const atMatch = textBeforeCursor.match(/@(\w*)$/);
       if (atMatch) {
         const atStart = cursorPosition - atMatch[0].length;
@@ -143,7 +140,6 @@ export function PromptEditor({
           value.slice(0, atStart) + `@${reference.name}` + textAfterCursor;
         onChange(newValue);
 
-        // Set cursor position after the inserted reference
         const newCursorPos = atStart + reference.name.length + 1;
         setTimeout(() => {
           textarea.focus();
@@ -157,7 +153,6 @@ export function PromptEditor({
     [value, cursorPosition, onChange]
   );
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -179,18 +174,19 @@ export function PromptEditor({
         style={{ pointerEvents: 'none' }}
       />
 
-      <Textarea
+      <textarea
         ref={textareaRef}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className="min-h-[100px] resize-none text-base bg-transparent border-0 focus-visible:ring-0 p-0"
         rows={3}
+        className="w-full bg-transparent text-white text-base leading-relaxed placeholder:text-[#555] resize-none outline-none border-0 focus:ring-0"
+        style={{ caretColor: '#254130' }}
       />
 
-      {showDropdown && (
+      {showDropdown && filteredReferences.length > 0 && (
         <ReferenceDropdown
           references={filteredReferences}
           searchQuery={searchQuery}

@@ -19,8 +19,8 @@ export function ExpandedPreview({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium text-[#888]">
         <svg
           className="h-4 w-4"
           fill="none"
@@ -43,16 +43,14 @@ export function ExpandedPreview({
         What FLUX will see
       </div>
 
-      <div className="bg-muted/50 rounded-lg p-3 space-y-3">
-        {/* Expanded prompt text */}
-        <p className="text-sm font-mono whitespace-pre-wrap break-words">
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 space-y-3">
+        <p className="text-sm font-mono text-white whitespace-pre-wrap break-words">
           {expandedPrompt}
         </p>
 
-        {/* Reference images in order */}
         {orderedReferences.length > 0 && (
-          <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground mb-2">
+          <div className="pt-2 border-t border-[#2a2a2a]">
+            <p className="text-xs text-[#888] mb-2">
               Reference images (in order):
             </p>
             <div className="flex gap-2 flex-wrap">
@@ -62,16 +60,16 @@ export function ExpandedPreview({
                   className="relative group"
                   title={`${ref.name}: ${ref.description || 'No description'}`}
                 >
-                  <div className="relative w-12 h-12 rounded overflow-hidden bg-muted">
+                  <div className="relative w-10 h-10 rounded overflow-hidden bg-[#0d0d0d]">
                     <Image
                       src={ref.image_url}
                       alt={ref.name}
                       fill
                       className="object-cover"
-                      sizes="48px"
+                      sizes="40px"
                     />
                   </div>
-                  <div className="absolute -top-1 -left-1 bg-primary text-primary-foreground text-[10px] font-mono w-4 h-4 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-1 -left-1 bg-[#254130] text-white text-[10px] font-mono w-4 h-4 rounded-full flex items-center justify-center font-bold">
                     {index + 1}
                   </div>
                 </div>

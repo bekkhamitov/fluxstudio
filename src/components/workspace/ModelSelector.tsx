@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 
 interface ModelSelectorProps {
   value: FluxModel;
@@ -21,22 +20,27 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" disabled={disabled} className="h-9 px-3 gap-1.5 text-sm border-border">
-          <span className="text-muted-foreground">{selected.name}</span>
-          <svg className="h-3 w-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button
+          disabled={disabled}
+          className="h-10 px-4 flex items-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-sm transition-colors hover:bg-[#262626] hover:border-[#3a3a3a] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="text-white whitespace-nowrap">{selected.name}</span>
+          <svg className="h-3 w-3 text-[#666]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        </Button>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
+      <DropdownMenuContent align="end" className="w-[240px] bg-[#1a1a1a] border-[#2a2a2a]">
         {FLUX_MODELS.map((model) => (
           <DropdownMenuItem
             key={model.id}
             onClick={() => onChange(model.id)}
-            className="flex flex-col items-start gap-0.5 py-2"
+            className={`flex flex-col items-start gap-0.5 py-2.5 px-3 cursor-pointer ${
+              model.id === value ? 'bg-[#254130]' : 'hover:bg-[#262626]'
+            }`}
           >
-            <span className="font-medium text-sm">{model.name}</span>
-            <span className="text-xs text-muted-foreground">{model.description}</span>
+            <span className="font-medium text-white">{model.name}</span>
+            <span className="text-xs text-[#888]">{model.description}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -16,8 +16,8 @@ export function GenerationResult({ status, onReset }: GenerationResultProps) {
 
   if (status.status === 'error') {
     return (
-      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 space-y-3">
-        <div className="flex items-center gap-2 text-destructive">
+      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 space-y-3">
+        <div className="flex items-center gap-2 text-red-400">
           <svg
             className="h-5 w-5"
             fill="none"
@@ -33,8 +33,13 @@ export function GenerationResult({ status, onReset }: GenerationResultProps) {
           </svg>
           <span className="font-medium">Generation Failed</span>
         </div>
-        <p className="text-sm text-destructive/80">{status.error}</p>
-        <Button variant="outline" size="sm" onClick={onReset}>
+        <p className="text-sm text-red-400/80">{status.error}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onReset}
+          className="border-[#2a2a2a] hover:bg-[#262626]"
+        >
           Try Again
         </Button>
       </div>
@@ -45,11 +50,12 @@ export function GenerationResult({ status, onReset }: GenerationResultProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium">Generated Image</h3>
+          <h3 className="font-medium text-white">Generated Image</h3>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
+              className="border-[#2a2a2a] hover:bg-[#262626]"
               onClick={() => {
                 const link = document.createElement('a');
                 link.href = status.result!.imageUrl;
@@ -72,12 +78,17 @@ export function GenerationResult({ status, onReset }: GenerationResultProps) {
               </svg>
               Download
             </Button>
-            <Button variant="outline" size="sm" onClick={onReset}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReset}
+              className="border-[#2a2a2a] hover:bg-[#262626]"
+            >
               New Generation
             </Button>
           </div>
         </div>
-        <div className="relative aspect-square max-w-2xl mx-auto bg-muted rounded-lg overflow-hidden">
+        <div className="relative aspect-square max-w-2xl mx-auto bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg overflow-hidden">
           <Image
             src={status.result.imageUrl}
             alt="Generated image"

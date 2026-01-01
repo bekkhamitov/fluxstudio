@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { ReferenceImage } from '@/types';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 interface ReferenceCardProps {
@@ -50,32 +49,32 @@ export function ReferenceCard({
   return (
     <div
       className={`
-        group relative flex items-center gap-3 bg-card border rounded-lg p-2
+        group relative flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-2
         transition-all
-        ${isDragging ? 'shadow-lg ring-2 ring-primary' : 'hover:shadow-md'}
+        ${isDragging ? 'shadow-lg ring-2 ring-[#254130]' : 'hover:border-[#3a3a3a]'}
       `}
     >
       {/* Drag handle on left */}
       <div
-        className="flex-shrink-0 w-6 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-muted"
+        className="flex-shrink-0 w-6 h-10 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-[#262626]"
         {...dragListeners}
       >
-        <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="h-4 w-4 text-[#555]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
         </svg>
       </div>
 
       {/* Image thumbnail */}
-      <div className="relative flex-shrink-0 w-12 h-12 rounded overflow-hidden bg-muted">
+      <div className="relative flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-[#0d0d0d]">
         <Image
           src={reference.image_url}
           alt={reference.name}
           fill
           className="object-cover"
-          sizes="48px"
+          sizes="40px"
         />
         {/* Position indicator */}
-        <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-mono px-1 rounded-tl flex items-center gap-0.5">
+        <div className="absolute bottom-0 right-0 bg-black/80 text-white text-[9px] font-mono px-1 rounded-tl flex items-center gap-0.5">
           {index + 1}
           {reference.isPending && (
             <svg className="animate-spin h-2 w-2" viewBox="0 0 24 24">
@@ -93,20 +92,20 @@ export function ReferenceCard({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name"
-            className="h-6 text-xs"
+            className="h-6 text-xs bg-[#0d0d0d] border-[#2a2a2a] text-white"
             autoFocus
           />
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description"
-            className="h-6 text-xs"
+            className="h-6 text-xs bg-[#0d0d0d] border-[#2a2a2a] text-white"
           />
         </div>
       ) : (
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">@{reference.name}</p>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-sm font-medium text-white truncate">@{reference.name}</p>
+          <p className="text-xs text-[#888] truncate">
             {reference.description || 'No description'}
           </p>
         </div>
@@ -116,36 +115,38 @@ export function ReferenceCard({
       <div className="flex-shrink-0 flex items-center gap-1">
         {isEditing ? (
           <>
-            <Button size="sm" onClick={handleSave} className="h-7 text-xs px-2">
+            <button
+              onClick={handleSave}
+              className="h-7 px-2 text-xs text-white bg-[#254130] rounded transition-colors hover:bg-[#2d5039]"
+            >
               Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 text-xs px-2">
+            </button>
+            <button
+              onClick={handleCancel}
+              className="h-7 px-2 text-xs text-white bg-[#1a1a1a] border border-[#2a2a2a] rounded transition-colors hover:bg-[#262626]"
+            >
               Cancel
-            </Button>
+            </button>
           </>
         ) : (
           <>
-            <Button
-              size="sm"
-              variant="ghost"
+            <button
               onClick={() => setIsEditing(true)}
-              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-7 w-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[#888] hover:text-white hover:bg-[#262626] rounded"
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
+            </button>
+            <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+              className="h-7 w-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[#888] hover:text-red-400 hover:bg-[#262626] rounded"
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-            </Button>
+            </button>
           </>
         )}
       </div>

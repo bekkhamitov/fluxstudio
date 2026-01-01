@@ -82,38 +82,38 @@
 }
 
 .dark {
-  /* BFL Playground inspired dark theme */
+  /* Dark theme with #254130 accent */
   --background: #0d0d0d;
   --foreground: #ffffff;
   --card: #1a1a1a;
   --card-foreground: #ffffff;
-  --popover: #262626;
+  --popover: #1a1a1a;
   --popover-foreground: #ffffff;
-  --primary: #22c55e;
-  --primary-foreground: #000000;
-  --secondary: #262626;
+  --primary: #254130;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1a1a;
   --secondary-foreground: #ffffff;
   --muted: #262626;
   --muted-foreground: #888888;
-  --accent: #333333;
+  --accent: #254130;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --border: #2a2a2a;
   --input: #1a1a1a;
-  --ring: #22c55e;
-  --chart-1: #22c55e;
+  --ring: #254130;
+  --chart-1: #254130;
   --chart-2: #3b82f6;
   --chart-3: #f59e0b;
   --chart-4: #8b5cf6;
   --chart-5: #ef4444;
   --sidebar: #111111;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #22c55e;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #262626;
+  --sidebar-primary: #254130;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2a2a2a;
-  --sidebar-ring: #22c55e;
+  --sidebar-ring: #254130;
 }
 
 @layer base {

@@ -10,10 +10,12 @@ A workflow tool that makes FLUX multi-reference intuitive:
 - **Smart Upload** - Drop an image, AI auto-generates a short name (1-2 words) and description
 - **Instant Preview** - Images show immediately with temp names, analysis updates in background
 - **@ Syntax** - Type `@` for dropdown, Tab/Enter to autocomplete, write naturally: "A woman driving @ferrari through @city"
-- **Persistent Library** - References saved to Supabase, all references available in @ dropdown
+- **Persistent Library** - References saved to Supabase, available via + menu "Assets"
+- **Session References** - Each generation starts fresh, add references from library or upload new
 - **"What FLUX Sees" Preview** - Shows expanded prompt (`@ferrari` → "the red Ferrari 488 (image 1)")
 - **Generation History** - All outputs saved with prompts and references used
 - **Reference Reordering** - Drag handle to reorder, position matters for FLUX
+- **Size Selector** - Choose aspect ratio (1:1, 4:5, 9:16, etc.) or custom dimensions
 
 ## Tech Stack
 
@@ -26,19 +28,28 @@ A workflow tool that makes FLUX multi-reference intuitive:
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Main workspace (prompt-focused layout)
+│   ├── page.tsx           # Main workspace (sidebar + prompt editor)
 │   ├── history/           # Generation history view
 │   ├── auth/              # Login page + callback
 │   └── api/               # API routes
 │       ├── analyze-image/ # Claude Haiku image analysis
 │       └── generate/      # BFL API wrapper
 ├── components/
+│   ├── layout/            # Layout components
+│   │   └── Sidebar        # Navigation sidebar (Generate, History, Assets)
 │   ├── workspace/         # Main UI components
 │   │   ├── PromptEditor   # @ syntax with keyboard navigation
 │   │   ├── ReferenceDropdown # Autocomplete dropdown (absolute positioned)
 │   │   ├── ReferenceCard  # Compact card with hover actions
 │   │   ├── ReferenceGrid  # Drag-drop grid with dnd-kit
-│   │   └── ReferenceUploader # Toolbar-style upload button
+│   │   ├── AddMenu        # + button with Upload/Assets/History options
+│   │   ├── SizeSelector   # Image size selector (presets + custom)
+│   │   ├── ModelSelector  # FLUX model selector
+│   │   ├── GenerateButton # Arrow button for generation
+│   │   ├── ReferencesModal # Modal to select from saved references
+│   │   ├── GenerationsModal # Modal to select from history
+│   │   ├── ExpandedPreview # "What FLUX sees" preview
+│   │   └── GenerationResult # Generated image display
 │   ├── history/           # History view components
 │   ├── auth/              # Auth button
 │   └── ui/                # shadcn components
@@ -99,19 +110,23 @@ Required in `.env.local`:
 
 ## Core Features
 
-1. **Reference Upload** - Toolbar button, instant display with optimistic updates
-2. **@ Syntax Editor** - Type @ for dropdown, Tab/Enter to select, Arrow keys to navigate
-3. **Preview Panel** - Shows expanded prompt FLUX receives
-4. **Model Selector** - Switch between pro/max/flex
-5. **History** - All generations saved, accessible via header link
+1. **Sidebar Navigation** - Generate, History, Assets tabs on the side
+2. **+ Menu** - Upload new images, select from Assets, or select from History
+3. **Session References** - References are per-generation, not auto-loaded
+4. **@ Syntax Editor** - Type @ for dropdown, Tab/Enter to select, Arrow keys to navigate
+5. **Preview Panel** - Shows expanded prompt FLUX receives
+6. **Model Selector** - Switch between pro/max/flex
+7. **Size Selector** - Presets (1:1, 4:5, 9:16, etc.) + custom dimensions
+8. **History** - All generations saved, can use as references
 
 ## UI/UX
 
-- Dark theme with green accent 
-- Prompt-focused layout with card container
-- Inline reference list (drag handle | thumbnail | name/description | actions)
-- Toolbar-style controls (add images, model selector, generate)
-- History shows reference snapshots with names and thumbnails
+- BFL Playground inspired dark theme (#0d0d0d background, green #22c55e accent)
+- Sidebar navigation on the left (Generate, History, Assets)
+- Large prompt card with textarea and bottom toolbar
+- Toolbar has: + button (Assets/History/Upload), Model selector, Size selector, Settings, Generate arrow
+- Session-based references below prompt card
+- Generate button also appears under references when present
 
 
 * Remember to always update @CLAUDE.md with changes that you've made
