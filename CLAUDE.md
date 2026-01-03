@@ -1,4 +1,4 @@
-# FLUX Studio
+# FLUX Studio 
 
 ## Problem
 
@@ -129,4 +129,4 @@ Required in `.env.local`:
 - Generate button also appears under references when present
 
 
-* Remember to always update @CLAUDE.md with changes that you've made
+* Remember to always update @CLAUDE.md with changes that you've made!
